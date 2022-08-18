@@ -1,0 +1,52 @@
+<?php
+
+echo json_encode([
+    'data' => [
+        'services' => [
+            [
+                'id' => 1,
+                'venue_id' => (int)$venueId,
+                'type_id' => 1,
+                'name' => 'Miami Watersports LCC',
+                'description' => 'Courses teach learners how to become efficient project managers using various methodologies principles.',
+                'information_content' => null,
+                'price' => 15,
+                'code' => null,
+                'min_participants' => 0,
+                'max_participants' => 100,
+                'quota' => 100,
+                'photo' => null,
+                'extra' => 'Beverages included.',
+                'street' => null,
+                'state' => null,
+                'city' => null,
+                'zip' => null,
+                'phone' => '81834567890',
+                'website' => 'https://google.com',
+                'launch_date' => '6/1/2021',
+            ],
+            [
+                'id' => 2,
+                'venue_id' => (int)$venueId,
+                'type_id' => 1,
+                'name' => 'BWell Spa',
+                'description' => null,
+                'information_content' => null,
+                'price' => 50,
+                'code' => null,
+                'min_participants' => 10,
+                'max_participants' => 50,
+                'quota' => 50,
+                'photo' => null,
+                'extra' => null,
+                'street' => null,
+                'state' => null,
+                'city' => null,
+                'zip' => null,
+                'phone' => '81834567890',
+                'website' => 'https://google.com',
+                'launch_date' => '6/10/2021',
+            ],
+        ]
+    ],
+]);
