@@ -33,7 +33,7 @@ class EventController extends Controller {
 
         /** @var User $user */
         $user = Auth::user();
-
+        print_r('asdf');
         if ($planner = $user->planner) {
             $paginatedItems = $planner->events()->with(['service', 'eventType'])->paginate($request->rpp);
         } else if ($merchant = $user->merchant) {
@@ -53,6 +53,10 @@ class EventController extends Controller {
             ],
         ]);
     }
+
+    // public function eventsByPlanner(GetEventsRequest $request): JsonResponse {
+
+    // }
 
     public function show(Event $event): JsonResponse {
         return $this->success($event->toArray());
