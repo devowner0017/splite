@@ -6,7 +6,6 @@ use App\Http\Requests\ChangeEventStatusRequest;
 use App\Http\Requests\CreateEventRequest;
 use App\Http\Requests\GetEventsRequest;
 use App\Http\Requests\InviteRequest;
-use App\Http\Requests\InvitationStatusRequest;
 use App\Http\Requests\UpdateInvitationStatusRequest;
 use App\Jobs\EventInvitationEmailJob;
 use App\Jobs\InvitationAcceptedEmailJob;
