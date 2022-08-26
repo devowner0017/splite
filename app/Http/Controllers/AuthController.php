@@ -173,23 +173,23 @@ class AuthController extends Controller {
                 }
 
                 $accountId = $user->merchant->stripe_connect_id;
-                // $account = Account::retrieve($accountId);
-                // $links = AccountLink::create([
-                //     'account' => $accountId,
-                //     'type' => 'account_onboarding',
-                //     'refresh_url' => env('STRIPE_CONNECT_REDIRECT_URL'),
-                //     'return_url' => env('STRIPE_CONNECT_REFRESH_URL'),
-                // ]);
-                // $user->merchant->links = $links;
-                $links = [
-                    'created'=> 1661522904,
-                    'expires_at' => 1661523204,
-                    'object'=> "account_link",
-                    'url' => 'https://connect.stripe.com/setup/e/acct_1LSToTRPByVAo1nB/rxRtRlr3DTig',
-                ];
+                $account = Account::retrieve($accountId);
+                $links = AccountLink::create([
+                    'account' => $accountId,
+                    'type' => 'account_onboarding',
+                    'refresh_url' => env('STRIPE_CONNECT_REDIRECT_URL'),
+                    'return_url' => env('STRIPE_CONNECT_REFRESH_URL'),
+                ]);
                 $user->merchant->links = $links;
-                // $user->merchant->onboarding_complete = $account->charges_enabled;
-                $user->merchant->onboarding_complete = false;
+                $user->merchant->onboarding_complete = $account->charges_enabled;
+                // $links = [
+                //     'created'=> 1661522904,
+                //     'expires_at' => 1661523204,
+                //     'object'=> "account_link",
+                //     'url' => 'https://connect.stripe.com/setup/e/acct_1LSToTRPByVAo1nB/rxRtRlr3DTig',
+                // ];
+                // $user->merchant->links = $links;
+                // $user->merchant->onboarding_complete = false;
             }
 
         } catch (EmailNotVerifiedException $e) {
