@@ -6,6 +6,7 @@ use App\Http\Requests\ChangeEventStatusRequest;
 use App\Http\Requests\CreateEventRequest;
 use App\Http\Requests\GetEventsRequest;
 use App\Http\Requests\InviteRequest;
+use App\Http\Requests\InvitationStatusRequest;
 use App\Http\Requests\UpdateInvitationStatusRequest;
 use App\Jobs\EventInvitationEmailJob;
 use App\Jobs\InvitationAcceptedEmailJob;
@@ -71,6 +72,17 @@ class EventController extends Controller {
         $event->saveOrFail();
 
         return $this->success($event->refresh()->toArray(), [], 201);
+    }
+
+    public function getInvitationStatusByEvent(string $event): JsonResponse {
+        /** @var User $user */
+        $event = json_decode($event);
+        /** @var Invitation $invitation */
+        $invitationItems = Invitation::query()
+            ->where('event_id', $event->id)
+            ->get();
+
+        return $this->success($invitationItems->toArray());
     }
 
     public function changeEventStatus(Event $event, ChangeEventStatusRequest $request): JsonResponse {
