@@ -12,7 +12,6 @@ use Illuminate\Http\JsonResponse;
 class BookingController extends Controller {
 
     public function index(GetBookingsRequest $request): JsonResponse {
-
         $paginatedItems = Booking::query()
             ->with(['event.service.venue'])
             ->whereHas('event.service.venue', function ($query) use ($request) {

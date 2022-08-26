@@ -33,16 +33,16 @@ class EventController extends Controller {
 
         /** @var User $user */
         $user = Auth::user();
-        print_r('asdf');
         if ($planner = $user->planner) {
             $paginatedItems = $planner->events()->with(['service', 'eventType'])->paginate($request->rpp);
         } else if ($merchant = $user->merchant) {
             $paginatedItems = Event::query()
-                ->with(['service', 'eventType', 'planner'])
+                ->with(['service', 'eventType', 'planner.user'])
                 ->whereHas('service.venue', function (Builder $query) use ($merchant) {
                     $query->where('merchant_id', $merchant->id);
                 })
                 ->paginate($request->rpp);
+            
         }
 
         return $this->success($paginatedItems->items(), [

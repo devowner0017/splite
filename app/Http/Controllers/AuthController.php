@@ -38,7 +38,6 @@ class AuthController extends Controller {
 
 
     public function register(RegisterRequest $request): JsonResponse {
-
         $type = $request->type;
 
         $user = new User();
@@ -55,7 +54,6 @@ class AuthController extends Controller {
             $userRole->setRole(ucfirst($type));
 
             $userRole->saveOrFail();
-
             if ($type === UserType::MERCHANT) {
                 $subcategory = new Merchant();
                 $account = self::createConnectAccount();
@@ -66,6 +64,8 @@ class AuthController extends Controller {
 
             $subcategory->user_id = $user->id;
             $subcategory->saveOrFail();
+
+            print_r('subcategory');
 
             SendVerificationEmailJob::dispatch($user->email);
 
@@ -147,13 +147,13 @@ class AuthController extends Controller {
         $credentials = $request->only(['email', 'password']);
 
         try {
-
             /** @var User $user */
             $user = User::query()
-                ->with(['merchant', 'planner'])
-                ->where('email', $credentials['email'])
-                ->whereHas($request->type)
-                ->firstOrFail();
+            ->with(['merchant', 'planner'])
+            ->where('email', $credentials['email'])
+            ->whereHas($request->type)
+            ->firstOrFail();
+            
 
             if ($user->verificationCodes->isNotEmpty()) {
                 throw new EmailNotVerifiedException();
@@ -164,8 +164,8 @@ class AuthController extends Controller {
                 ->delete();
 
             if ($user->merchant) {
-
                 if (!$user->merchant->stripe_connect_id) {
+                    
                     $account = self::createConnectAccount();
 
                     $user->merchant->stripe_connect_id = $account->id;
@@ -173,17 +173,23 @@ class AuthController extends Controller {
                 }
 
                 $accountId = $user->merchant->stripe_connect_id;
-                $account = Account::retrieve($accountId);
-
-                $links = AccountLink::create([
-                    'account' => $accountId,
-                    'type' => 'account_onboarding',
-                    'refresh_url' => env('STRIPE_CONNECT_REDIRECT_URL'),
-                    'return_url' => env('STRIPE_CONNECT_REFRESH_URL'),
-                ]);
-
+                // $account = Account::retrieve($accountId);
+                // $links = AccountLink::create([
+                //     'account' => $accountId,
+                //     'type' => 'account_onboarding',
+                //     'refresh_url' => env('STRIPE_CONNECT_REDIRECT_URL'),
+                //     'return_url' => env('STRIPE_CONNECT_REFRESH_URL'),
+                // ]);
+                // $user->merchant->links = $links;
+                $links = [
+                    'created'=> 1661522904,
+                    'expires_at' => 1661523204,
+                    'object'=> "account_link",
+                    'url' => 'https://connect.stripe.com/setup/e/acct_1LSToTRPByVAo1nB/rxRtRlr3DTig',
+                ];
                 $user->merchant->links = $links;
-                $user->merchant->onboarding_complete = $account->charges_enabled;
+                // $user->merchant->onboarding_complete = $account->charges_enabled;
+                $user->merchant->onboarding_complete = false;
             }
 
         } catch (EmailNotVerifiedException $e) {
