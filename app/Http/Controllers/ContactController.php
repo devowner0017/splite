@@ -13,14 +13,16 @@ use Illuminate\Support\Facades\Auth;
 class ContactController extends Controller {
 
     public function index(GetContactsRequest $request): JsonResponse {
-        $paginatedItems = $request->getPlanner()->contacts()->paginate();
-        return $this->success($paginatedItems->items(), [
-            'meta' => [
-                'page' => $paginatedItems->currentPage(),
-                'rpp' => $paginatedItems->perPage(),
-                'total' => $paginatedItems->total(),
-            ],
-        ]);
+        // $paginatedItems = $request->getPlanner()->contacts()->paginate();
+        // return $this->success($paginatedItems->items(), [
+        //     'meta' => [
+        //         'page' => $paginatedItems->currentPage(),
+        //         'rpp' => $paginatedItems->perPage(),
+        //         'total' => $paginatedItems->total(),
+        //     ],
+        // ]);
+        $paginatedItems = $request->getPlanner()->contacts()->get();
+        return $this->success($paginatedItems->toArray());
     }
 
     public function store(CreateContactRequest $request): JsonResponse {

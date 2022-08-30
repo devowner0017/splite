@@ -59,6 +59,7 @@ Route::middleware(['jwt.auth', 'jwt.refresh'])->group(function () {
     Route::resource('contacts', ContactController::class);
     Route::resource('events', EventController::class);
     Route::get('events/detail/{event_id}', [EventController::class, 'getInvitationStatusByEvent']);
+    Route::post('events/{event_id}/addinvite', [EventController::class, 'addInvite']);
     Route::post('events/{event_id}/invite', [EventController::class, 'invite']);
     Route::put('events/{event_id}/status', [EventController::class, 'changeEventStatus']);
     Route::put('events/{event_id}/cancel', [EventController::class, 'cancelEvent']);

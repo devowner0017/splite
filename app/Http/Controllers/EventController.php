@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ChangeEventStatusRequest;
 use App\Http\Requests\CreateEventRequest;
+use App\Http\Requests\UpdateEventRequest;
 use App\Http\Requests\GetEventsRequest;
 use App\Http\Requests\InviteRequest;
 use App\Http\Requests\UpdateInvitationStatusRequest;
@@ -26,6 +27,7 @@ use Illuminate\Support\Facades\Log;
 use Stripe\Refund;
 use Stripe\StripeClient;
 use Throwable;
+use Illuminate\Http\Request;
 
 class EventController extends Controller {
 
@@ -73,6 +75,18 @@ class EventController extends Controller {
         return $this->success($event->refresh()->toArray(), [], 201);
     }
 
+    public function update(UpdateEventRequest $request, $event_id): JsonResponse {
+        $user = Auth::user();
+        $eventItem = Event::query()
+                    ->where('id', $request->event_id)
+                    ->firstOrFail();
+        $guestCount = $eventItem->guests_count;
+        $guestCount += (int)$request->guests_count;
+        $eventItem->guests_count = $guestCount;
+        $eventItem->saveOrFail();
+        return $this->success($eventItem->toArray());
+    }
+
     public function getInvitationStatusByEvent(string $event): JsonResponse {
         /** @var User $user */
         $event = json_decode($event);
@@ -111,9 +125,9 @@ class EventController extends Controller {
 
         return $this->success($event->refresh()->toArray());
     }
-
+    
     public function cancelEvent(Event $event): JsonResponse {
-
+        
         /** @var User $user */
         $user = Auth::user();
 
@@ -191,6 +205,54 @@ class EventController extends Controller {
 
             $invitation->saveOrFail();
 
+            if ($event->status === Event::STATUS_APPROVED) {
+                EventInvitationEmailJob::dispatch($invitation);
+            }
+        }
+
+        return $this->success();
+    }
+
+    public function addInvite(Event $event, InviteRequest $request) : JsonResponse {
+        //TODO
+        // check invitation/contact table save logic 
+        //save  get edited event
+        // 
+        /** @var User $user */
+        if ($event->planner_id !== $request->getPlanner()->id) {
+            return $this->error(Message::NOT_FOUND, 404);
+        }
+
+        // $invited = Invitation::query()
+        //     ->where('event_id', $event->id)
+        //     ->whereIn('contact_id', $request->contact_ids)
+        //     ->first();
+
+        // if ($invited) {
+        //     return $this->error(Message::CONTACT_INVITED, 422);
+        // }
+        $contacts = Contact::query()->where('planner_id', $request->getPlanner()->id)->findMany($request->contact_ids);
+        if ($contacts->count() !== count($request->contact_ids)) {
+            return $this->error(Message::CONTACT_NOT_FOUND, 404);
+        }
+        /** @var Contact $contact */
+        foreach ($contacts as $contact) {
+            $invitation = new Invitation();
+            $invited = Invitation::query()
+            ->where('event_id', $event->id)
+            ->where('contact_id', $contact->id)
+            ->first();
+
+            if ($invited) {
+                continue;
+            }
+            $invitation->event_id = $event->id;
+            $invitation->contact_id = $contact->id;
+            $invitation->status = Invitation::INVITED;
+
+            $invitation->hash = md5("{$event->id} {$contact->id}");
+
+            $invitation->saveOrFail();
             if ($event->status === Event::STATUS_APPROVED) {
                 EventInvitationEmailJob::dispatch($invitation);
             }
