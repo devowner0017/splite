@@ -182,14 +182,6 @@ class AuthController extends Controller {
                 ]);
                 $user->merchant->links = $links;
                 $user->merchant->onboarding_complete = $account->charges_enabled;
-                // $links = [
-                //     'created'=> 1661522904,
-                //     'expires_at' => 1661523204,
-                //     'object'=> "account_link",
-                //     'url' => 'https://connect.stripe.com/setup/e/acct_1LSToTRPByVAo1nB/rxRtRlr3DTig',
-                // ];
-                // $user->merchant->links = $links;
-                // $user->merchant->onboarding_complete = false;
             }
 
         } catch (EmailNotVerifiedException $e) {
