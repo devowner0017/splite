@@ -35,26 +35,37 @@ class EventController extends Controller {
 
         /** @var User $user */
         $user = Auth::user();
-        if ($planner = $user->planner) {
-            $paginatedItems = $planner->events()->with(['service', 'eventType'])->paginate($request->rpp);
-        } else if ($merchant = $user->merchant) {
-            $paginatedItems = Event::query()
-                ->with(['service', 'eventType', 'planner.user'])
-                ->whereHas('service.venue', function (Builder $query) use ($merchant) {
-                    $query->where('merchant_id', $merchant->id);
-                })
-                ->paginate($request->rpp);
-            
-        }
+        try {
+            // $paginatedItems = $request->getPlanner()->contacts()->get();
+            // return $this->success($paginatedItems->toArray());
+            if ($planner = $user->planner) {
+                $paginatedItems = $planner->events()->with(['service', 'eventType'])->paginate($request->rpp);
+                // $paginatedItems = $planner->events()->with(['service', 'eventType'])->get();
+            } else if ($merchant = $user->merchant) {
+                $paginatedItems = Event::query()
+                    ->with(['service', 'eventType', 'planner.user'])
+                    ->whereHas('service.venue', function (Builder $query) use ($merchant) {
+                        $query->where('merchant_id', $merchant->id);
+                    })
+                    ->paginate($request->rpp);
+                    // ->get();
+                
+            }
 
-        return $this->success($paginatedItems->items(), [
-            'meta' => [
-                'page' => $paginatedItems->currentPage(),
-                'rpp' => $paginatedItems->perPage(),
-                'total' => $paginatedItems->total(),
-            ],
-        ]);
-    }
+            // return $this->success($paginatedItems->toArray());
+            return $this->success($paginatedItems->items(), [
+                'meta' => [
+                    'page' => $paginatedItems->currentPage(),
+                    'rpp' => $paginatedItems->perPage(),
+                    'total' => $paginatedItems->total(),
+                ],
+            ]);
+
+
+        } catch (\Exception $e) {
+            dd($e);
+        }
+     }
 
     // public function eventsByPlanner(GetEventsRequest $request): JsonResponse {
 
