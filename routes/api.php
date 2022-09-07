@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('invitations/{hash}', [EventController::class, 'getInvitationDetails']);
 Route::put('invitations/{hash}', [EventController::class, 'updateInvitationStatus']);
+Route::get('invitations/status/{hash}', [EventController::class, 'getSoldStatus']);
+Route::get('invitations/update/{hash}/{quantity}', [EventController::class, 'updatePaymentIntentId']);
 Route::get('lookups/venues', [LookupController::class, 'venues']);
 Route::get('lookups/venues/{venue}/services', [LookupController::class, 'services']);
 Route::post('bookings', [BookingController::class, 'store']);

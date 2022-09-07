@@ -257,8 +257,10 @@ class EventController extends Controller {
             if ($invited) {
                 continue;
             }
+            $default_quantity = 1;
             $invitation->event_id = $event->id;
             $invitation->contact_id = $contact->id;
+            $invitation->quantity = $default_quantity;
             $invitation->status = Invitation::INVITED;
 
             $invitation->hash = md5("{$event->id} {$contact->id}");
@@ -270,6 +272,74 @@ class EventController extends Controller {
         }
 
         return $this->success();
+    }
+
+    public function getSoldStatus(string $hash): JsonResponse {
+        /** @var Invitation $invitation */
+        $invitation = Invitation::query()
+            ->with(['contact', 'event'])
+            ->where('hash', $hash)
+            ->firstOrFail();
+        $max_participants = $invitation->event->service->max_participants;
+        $event_id = $invitation->event_id;
+        $status = 'accepted';
+        $invite_list = Invitation::where([
+                                    ['event_id', '=', $event_id],
+                                    ['status', '=', $status]
+                                    ])->get();
+        $sold_sum = 0;
+        foreach($invite_list as $list) {
+            $sold_sum += $list['amount'];
+        }
+        $data = array(
+            'count'=>$sold_sum
+        );
+        return $this->success($data);    
+    }
+
+
+    public function updatePaymentIntentId(string $hash, string $quantity): JsonResponse{
+         /** @var Invitation $invitation */
+         $invitation = Invitation::query()
+         ->with(['contact', 'event'])
+         ->where('hash', $hash)
+         ->firstOrFail();
+        $account = Account::retrieve($invitation->event->service->venue->merchant->stripe_connect_id);
+        if ($account->charges_enabled) {
+            $fee = floor(env('APPLICATION_FEE_PERCENT') * $invitation->event->service->price);
+
+            if (!$invitation->payment_intent_id) {
+                $total = (int)$quantity *$invitation->event->service->price * 100;
+                $paymentIntent = PaymentIntent::create([
+                    'payment_method_types' => [
+                        'card'
+                    ],
+                    // 'amount' => $invitation->event->service->price * 100,
+                    'amount' => $total,
+                    'currency' => 'usd',
+                    'application_fee_amount' => $fee,
+                    'transfer_data' => [
+                        'destination' => $invitation->event->service->venue->merchant->stripe_connect_id,
+                    ],
+                ]);
+
+                $invitation->payment_intent_id = $paymentIntent->id;
+                $invitation->quantity = (int)$quantity;
+                $invitation->saveOrFail();
+            } else {
+                $paymentIntent = PaymentIntent::retrieve($invitation->payment_intent_id);
+            }
+
+            $invitation->payment_intent_id_secret = $paymentIntent->client_secret;
+        } else {
+            Log::debug("Charges are not enabled for the account", $invitation->toArray());
+            $invitation->payment_intent_id_secret = null;
+        }
+        $data = array(
+            'payment_intent_id_secret' => $invitation->payment_intent_id_secret,
+            'status' => 'success'
+        );
+        return $this->success($data);
     }
 
     public function getInvitationDetails(string $hash): JsonResponse {
@@ -297,7 +367,6 @@ class EventController extends Controller {
                         'destination' => $invitation->event->service->venue->merchant->stripe_connect_id,
                     ],
                 ]);
-
                 $invitation->payment_intent_id = $paymentIntent->id;
                 $invitation->saveOrFail();
             } else {
