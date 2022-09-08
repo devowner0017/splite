@@ -303,7 +303,8 @@ class EventController extends Controller {
          $invitation = Invitation::query()
          ->with(['contact', 'event'])
          ->where('hash', $hash)
-         ->firstOrFail();
+         ->firstOrFail();   
+         
         $account = Account::retrieve($invitation->event->service->venue->merchant->stripe_connect_id);
         if ($account->charges_enabled) {
             $fee = floor(env('APPLICATION_FEE_PERCENT') * $invitation->event->service->price);
