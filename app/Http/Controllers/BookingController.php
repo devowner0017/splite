@@ -18,7 +18,6 @@ class BookingController extends Controller {
                 $query->where('venues.merchant_id', $request->getMerchant()->id);
             })->paginate($request->rpp);
 
-            
         return $this->success($paginatedItems->items(), [
             'meta' => [
                 'page' => $paginatedItems->currentPage(),

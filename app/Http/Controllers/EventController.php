@@ -298,13 +298,12 @@ class EventController extends Controller {
     }
 
 
-    public function updatePaymentIntentId(string $hash, string $quantity): JsonResponse{
+    public function updatePaymentIntentId(string $hash, string $quantity): JsonResponse {
          /** @var Invitation $invitation */
          $invitation = Invitation::query()
          ->with(['contact', 'event'])
          ->where('hash', $hash)
-         ->firstOrFail();   
-         
+         ->firstOrFail();
         $account = Account::retrieve($invitation->event->service->venue->merchant->stripe_connect_id);
         if ($account->charges_enabled) {
             $fee = floor(env('APPLICATION_FEE_PERCENT') * $invitation->event->service->price);
