@@ -16,6 +16,13 @@ Route::get('invitations/{hash}', [EventController::class, 'getInvitationDetails'
 Route::put('invitations/{hash}', [EventController::class, 'updateInvitationStatus']);
 Route::get('invitations/status/{hash}', [EventController::class, 'getSoldStatus']);
 Route::get('invitations/update/{hash}/{quantity}', [EventController::class, 'updatePaymentIntentId']);
+
+Route::get('link/{uuid}', [EventController::class, 'getInvitationDetailsByUuid']);
+Route::put('link/{uuid}', [EventController::class, 'updateInvitationStatusByUuid']);
+Route::get('link/status/{uuid}', [EventController::class, 'getSoldStatusByUuid']);
+Route::get('link/update/{uuid}/{quantity}', [EventController::class, 'updatePaymentIntendIdByUuid']);
+Route::put('link/update/{quantity}/{uuid}/{first_name}/{email_address}', [EventController::class, 'addAttendeeInfoByUuid']);
+
 Route::get('lookups/venues', [LookupController::class, 'venues']);
 Route::get('lookups/venues/{venue}/services', [LookupController::class, 'services']);
 Route::post('bookings', [BookingController::class, 'store']);

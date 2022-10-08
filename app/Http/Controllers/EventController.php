@@ -80,7 +80,6 @@ class EventController extends Controller {
         $event = new Event();
         $event->planner_id = Auth::user()->planner->id;
         $event->fill($request->getFillableData());
-
         $event->saveOrFail();
 
         return $this->success($event->refresh()->toArray(), [], 201);
@@ -289,7 +288,7 @@ class EventController extends Controller {
                                     ])->get();
         $sold_sum = 0;
         foreach($invite_list as $list) {
-            $sold_sum += $list['amount'];
+            $sold_sum += $list['quantity'];
         }
         $data = array(
             'count'=>$sold_sum
@@ -297,13 +296,39 @@ class EventController extends Controller {
         return $this->success($data);    
     }
 
+    public function getSoldStatusByUuid(string $uuid): JsonResponse {
+        /** @var Event $invitation */
+        $event = Event::query()
+                ->where('uuid', $uuid)
+                ->firstOrFail();
+        $event_id = $event->id;
+        /** @var Invitation $invitation */
+        $invitation = Invitation::query()
+            ->with(['contact', 'event'])
+            ->where('event_id', $event_id)
+            ->firstOrFail();
+        $max_participants = $invitation->event->service->max_participants;
+        $status = 'accepted';
+        $invite_list = Invitation::where([
+                                    ['event_id', '=', $event_id],
+                                    ['status', '=', $status]
+                                    ])->get();
+        $sold_sum = 0;
+        foreach($invite_list as $list) {
+            $sold_sum += $list['quantity'];
+        }
+        $data = array(
+            'count'=>$sold_sum
+        );
+        return $this->success($data);   
+    }
 
     public function updatePaymentIntentId(string $hash, string $quantity): JsonResponse {
          /** @var Invitation $invitation */
-         $invitation = Invitation::query()
-         ->with(['contact', 'event'])
-         ->where('hash', $hash)
-         ->firstOrFail();
+        $invitation = Invitation::query()
+                    ->with(['contact', 'event'])
+                    ->where('hash', $hash)
+                    ->firstOrFail();
         $account = Account::retrieve($invitation->event->service->venue->merchant->stripe_connect_id);
         if ($account->charges_enabled) {
             $fee = floor(env('APPLICATION_FEE_PERCENT') * $invitation->event->service->price);
@@ -342,6 +367,109 @@ class EventController extends Controller {
         return $this->success($data);
     }
 
+    public function updatePaymentIntendIdByUuid(string $uuid, string $quantity) : JsonResponse {
+        $event = Event::query()
+                ->where('uuid', $uuid)
+                ->firstOrFail();
+        $event_id = $event->id;
+        /** @var Invitation $invitation */
+        $invitation = Invitation::query()
+                    ->with(['event'])
+                    ->where('event_id', $event_id)
+                    ->firstOrFail();
+        $account = Account::retrieve($invitation->event->service->venue->merchant->stripe_connect_id);
+        if ($account->charges_enabled) {
+            $fee = floor(env('APPLICATION_FEE_PERCENT') * $invitation->event->service->price);
+
+            if (!$invitation->payment_intent_id) {
+                $total = (int)$quantity *$invitation->event->service->price * 100;
+                $paymentIntent = PaymentIntent::create([
+                    'payment_method_types' => [
+                        'card'
+                    ],
+                    // 'amount' => $invitation->event->service->price * 100,
+                    'amount' => $total,
+                    'currency' => 'usd',
+                    'application_fee_amount' => $fee,
+                    'transfer_data' => [
+                        'destination' => $invitation->event->service->venue->merchant->stripe_connect_id,
+                    ],
+                ]);
+
+                $invitation->payment_intent_id = $paymentIntent->id;
+                $invitation->quantity = (int)$quantity;
+                $invitation->saveOrFail();
+            } else {
+                $paymentIntent = PaymentIntent::retrieve($invitation->payment_intent_id);
+            }
+
+            $invitation->payment_intent_id_secret = $paymentIntent->client_secret;
+        } else {
+            Log::debug("Charges are not enabled for the account", $invitation->toArray());
+            $invitation->payment_intent_id_secret = null;
+        }
+        $data = array(
+            'payment_intent_id_secret' => $invitation->payment_intent_id_secret,
+            'status' => 'success'
+        );
+        return $this->success($data);
+    }
+
+    public function addAttendeeInfoByUuid(string $quantity, string $uuid, string $first_name, string $email_address) : JsonResponse
+    {
+        $event = Event::query()
+            ->where('uuid', $uuid)
+            ->firstOrFail();
+        $event_id = $event->id;
+        $planner_id = $event->planner_id;
+
+        //Add contact
+        $contact = new Contact();
+        $contact->planner_id = $planner_id;
+        $contact->first_name = $first_name;
+        $contact->last_name = 'lastName';
+        $contact->email = $email_address;
+        $contact->saveOrFail();
+        $contact_id = $contact->id;
+        $invitation = new Invitation();
+        $invitation->event_id = $event_id;
+        $invitation->contact_id = $contact_id;
+        $invitation->status = Invitation::ACCEPTED;
+        $invitation->hash = md5("{$event->id} {$contact->id}");
+        $invitation->quantity = (int)$quantity;
+
+        //set payment_intent_id
+        $account = Account::retrieve($event->service->venue->merchant->stripe_connect_id);
+        $fee = floor(env('APPLICATION_FEE_PERCENT') * $event->service->price);
+
+        $total = (int)$quantity * $event->service->price * 100;
+        $paymentIntent = PaymentIntent::create([
+            'payment_method_types' => [
+                'card'
+            ],
+            // 'amount' => $invitation->event->service->price * 100,
+            'amount' => $total,
+            'currency' => 'usd',
+            'application_fee_amount' => $fee,
+            'transfer_data' => [
+                'destination' => $event->service->venue->merchant->stripe_connect_id,
+            ],
+        ]);
+
+        $invitation->payment_intent_id = $paymentIntent->id;
+
+        $invitation->saveOrFail();
+
+        $invitation->payment_intent_id_secret = $paymentIntent->client_secret;
+        
+        $data = array(
+            'payment_intent_id_secret' => $invitation->payment_intent_id_secret,
+            'status' => 'success'
+        );
+        return $this->success($data);
+
+    }
+
     public function getInvitationDetails(string $hash): JsonResponse {
 
         /** @var Invitation $invitation */
@@ -350,6 +478,55 @@ class EventController extends Controller {
             ->where('hash', $hash)
             ->firstOrFail();
 
+        $account = $invitation->event->service->venue->merchant->stripe_connect_id;
+        
+        $account = Account::retrieve($invitation->event->service->venue->merchant->stripe_connect_id);
+
+        if ($account->charges_enabled) {
+            $fee = floor(env('APPLICATION_FEE_PERCENT') * $invitation->event->service->price);
+
+            if (!$invitation->payment_intent_id) {
+                $paymentIntent = PaymentIntent::create([
+                    'payment_method_types' => [
+                        'card'
+                    ],
+                    'amount' => $invitation->event->service->price * 100,
+                    'currency' => 'usd',
+                    'application_fee_amount' => $fee,
+                    'transfer_data' => [
+                        'destination' => $invitation->event->service->venue->merchant->stripe_connect_id,
+                    ],
+                ]);
+                $invitation->payment_intent_id = $paymentIntent->id;
+                $invitation->saveOrFail();
+            } else {
+                $paymentIntent = PaymentIntent::retrieve($invitation->payment_intent_id);
+            }
+
+            $invitation->payment_intent_id_secret = $paymentIntent->client_secret;
+        } else {
+            Log::debug("Charges are not enabled for the account", $invitation->toArray());
+            $invitation->payment_intent_id_secret = null;
+        }
+
+        return $this->success($invitation->toArray());
+    }
+
+    // get Invitation Detail Data by event
+    public function getInvitationDetailsByUuid(string $uuid): JsonResponse {
+        /** @var Event $invitation */
+        $event = Event::query()
+            ->where('uuid', $uuid)
+            ->firstOrFail();
+        $event_id = $event->id;
+
+        /** @var Invitation $invitation */
+            
+        $invitation = Invitation::query()
+            ->with(['event'])
+            ->where('event_id', $event_id)
+            ->firstOrFail();
+        
         $account = Account::retrieve($invitation->event->service->venue->merchant->stripe_connect_id);
 
         if ($account->charges_enabled) {
@@ -419,4 +596,42 @@ class EventController extends Controller {
 
         return $this->success($invitation->refresh()->toArray());
     }
+
+    // public function updateInvitationStatusByUuid(string $uuid, UpdateInvitationStatusRequest $request): JsonResponse {
+
+    //     $status = $request->status;
+
+    //     /** @var Invitation $invitation */
+    //     $invitation = Invitation::query()
+    //         ->where('hash', $hash)
+    //         ->firstOrFail();
+
+    //     if ($invitation->status !== Invitation::INVITED) {
+    //         return $this->error(Message::INVITATION_STATUS_IS_ALREADY_SET, 403);
+    //     }
+
+    //     $invitation->status = $status;
+    //     $invitation->note = $request->reason;
+
+    //     switch ($status) {
+    //         case Invitation::ACCEPTED:
+    //             InvitationAcceptedEmailJob::dispatch($invitation);
+    //             break;
+    //         case Invitation::DECLINED:
+    //             InvitationDeclinedEmailJob::dispatch($invitation);
+    //             break;
+    //         case Invitation::UNSURE:
+    //             // TODO: notify the merchant after 8 hours or so if the spot hasn't been filled already
+    //             // TODO: notify the planner to fill the spot
+    //         case Invitation::REMOVED:
+    //             // TODO: notify the planner
+    //             break;
+    //         default:
+    //             break;
+    //     }
+
+    //     $invitation->saveOrFail();
+
+    //     return $this->success($invitation->refresh()->toArray());
+    // }
 }

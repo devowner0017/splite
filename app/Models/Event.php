@@ -47,6 +47,7 @@ class Event extends Model {
         'start_time',
         'end_time',
         'guests_count',
+        'uuid',
         'service_id',
         'event_type_id',
         'status',

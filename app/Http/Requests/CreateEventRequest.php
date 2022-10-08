@@ -19,6 +19,7 @@ class CreateEventRequest extends PlannerRequest {
             'start_time',
             'end_time',
             'guests_count',
+            'uuid',
             'service_id',
             'event_type_id',
         ];
@@ -32,6 +33,7 @@ class CreateEventRequest extends PlannerRequest {
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i',
             'guests_count' => 'required|numeric|min:1|max:1000000',
+            'uuid' =>'required',
         ];
     }
 }
