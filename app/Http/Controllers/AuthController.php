@@ -65,7 +65,6 @@ class AuthController extends Controller {
             $subcategory->user_id = $user->id;
             $subcategory->saveOrFail();
 
-            print_r('subcategory');
 
             SendVerificationEmailJob::dispatch($user->email);
 

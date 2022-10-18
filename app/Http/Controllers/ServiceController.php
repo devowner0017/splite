@@ -37,6 +37,7 @@ class ServiceController extends Controller {
         $service->venue_id = $venue->id;
         $service->fill($request->getFillableData());
 
+
         $service->saveOrFail();
 
         return $this->success($service->refresh()->toArray(), [], 201);

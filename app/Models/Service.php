@@ -46,6 +46,7 @@ class Service extends Model {
         'information_content',
         'type',
         'price',
+        'per_unit',
         'code',
         'min_participants',
         'max_participants',
