@@ -478,8 +478,6 @@ class EventController extends Controller {
             ->where('hash', $hash)
             ->firstOrFail();
 
-        $account = $invitation->event->service->venue->merchant->stripe_connect_id;
-        
         $account = Account::retrieve($invitation->event->service->venue->merchant->stripe_connect_id);
 
         if ($account->charges_enabled) {
