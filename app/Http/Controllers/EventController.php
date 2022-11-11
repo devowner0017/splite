@@ -43,7 +43,7 @@ class EventController extends Controller {
                 // $paginatedItems = $planner->events()->with(['service', 'eventType'])->get();
             } else if ($merchant = $user->merchant) {
                 $paginatedItems = Event::query()
-                    ->with(['service', 'eventType', 'planner.user'])
+                    ->with(['service','invitations.contact', 'eventType', 'planner.user'])
                     ->whereHas('service.venue', function (Builder $query) use ($merchant) {
                         $query->where('merchant_id', $merchant->id);
                     })

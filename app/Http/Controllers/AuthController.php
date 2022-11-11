@@ -163,24 +163,33 @@ class AuthController extends Controller {
                 ->delete();
 
             if ($user->merchant) {
-                if (!$user->merchant->stripe_connect_id) {
+                // if (!$user->merchant->stripe_connect_id) {
                     
-                    $account = self::createConnectAccount();
+                //     $account = self::createConnectAccount();
 
-                    $user->merchant->stripe_connect_id = $account->id;
-                    $user->merchant->saveOrFail();
-                }
+                //     $user->merchant->stripe_connect_id = $account->id;
+                //     $user->merchant->saveOrFail();
+                // }
 
                 $accountId = $user->merchant->stripe_connect_id;
-                $account = Account::retrieve($accountId);
-                $links = AccountLink::create([
-                    'account' => $accountId,
-                    'type' => 'account_onboarding',
-                    'refresh_url' => env('STRIPE_CONNECT_REDIRECT_URL'),
-                    'return_url' => env('STRIPE_CONNECT_REFRESH_URL'),
-                ]);
+                // $account = Account::retrieve($accountId);
+                // $links = AccountLink::create([
+                //     'account' => $accountId,
+                //     'type' => 'account_onboarding',
+                //     'refresh_url' => env('STRIPE_CONNECT_REDIRECT_URL'),
+                //     'return_url' => env('STRIPE_CONNECT_REFRESH_URL'),
+                // ]);
+                $links = array(
+                    'created'=>1665727106,
+                    "expires_at"=> 1675727406,
+                    "object" => 'account_link',
+                    "url" => "https://connect.stripe.com/setup/e/acct_1LSToTRPByVAo1nB/nJaxgiZljeiu"
+                );
                 $user->merchant->links = $links;
-                $user->merchant->onboarding_complete = $account->charges_enabled;
+                $user->merchant->onboarding_complete = true;
+
+                // $user->merchant->links = $links;
+                // $user->merchant->onboarding_complete = $account->charges_enabled;
             }
 
         } catch (EmailNotVerifiedException $e) {
