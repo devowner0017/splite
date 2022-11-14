@@ -79,6 +79,19 @@ class EmailService implements EmailContract {
         ]);
     }
 
+    public function sendCreateEventEmail(array $to, string $plannerFirstName, string $plannerEmail): bool {
+        return $this->send(config('mandrill.create_event'), $to, [
+            [
+                'name' => 'planner_name',
+                'content' => $plannerFirstName
+            ],
+            [
+                'name' => 'planner_email',
+                'content' => $plannerEmail
+            ]
+        ]);
+    }
+
     public function sendInvitationAcceptedEmail(
         array $to,
         string $plannerFirstName,

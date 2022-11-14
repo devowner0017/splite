@@ -11,6 +11,7 @@ use App\Http\Requests\UpdateInvitationStatusRequest;
 use App\Jobs\EventInvitationEmailJob;
 use App\Jobs\InvitationAcceptedEmailJob;
 use App\Jobs\InvitationDeclinedEmailJob;
+use App\Jobs\CreateEventEmailJob;
 use App\Models\Booking;
 use App\Models\Contact;
 use App\Models\Event;
@@ -82,6 +83,7 @@ class EventController extends Controller {
         $event->fill($request->getFillableData());
         $event->saveOrFail();
 
+        CreateEventEmailJob::dispatch($event);
         return $this->success($event->refresh()->toArray(), [], 201);
     }
 

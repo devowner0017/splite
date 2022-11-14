@@ -6,6 +6,7 @@ return [
     'register' => env('MANDRILL_REGISTER_TEMPLATE'),
     'verification' => env('MANDRILL_VERIFICATION_TEMPLATE'),
     'event_invitation' => env('MANDRILL_EVENT_INVITATION_TEMPLATE'),
+    'create_event' => env('MANDRILL_CREATE_EVENT_TEMPLATE'),
     'invitation_accepted' => env('MANDRILL_INVITATION_ACCEPTED_TEMPLATE'),
     'invitation_declined' => env('MANDRILL_INVITATION_DECLINED_TEMPLATE'),
     'payment_completed_contact' => env('MANDRILL_PAYMENT_COMPLETED_CONTACT_EMAIL'),
