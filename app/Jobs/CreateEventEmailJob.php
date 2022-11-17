@@ -33,7 +33,7 @@ class CreateEventEmailJob implements ShouldQueue
         $isSent = (new EmailService())->sendCreateEventEmail([
             'first_name' => $this->service->venue->merchant->user->first_name,
             'email' => $this->service->venue->merchant->user->email,
-        ], $this->event->planner->user->first_name, $this->event->planner->user->email);
+        ], $this->event->planner->user->first_name, $this->event->planner->user->email, $this->event->service->description, $this->event->service->venue->name, $this->event->date, $this->event->start_time);
 
         if (!$isSent) {
             throw new FailedToSendEmailException();

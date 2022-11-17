@@ -79,7 +79,7 @@ class EmailService implements EmailContract {
         ]);
     }
 
-    public function sendCreateEventEmail(array $to, string $plannerFirstName, string $plannerEmail): bool {
+    public function sendCreateEventEmail(array $to, string $plannerFirstName, string $plannerEmail, string $description, string $venueName, string $startDate, string $startTime): bool {
         return $this->send(config('mandrill.create_event'), $to, [
             [
                 'name' => 'planner_name',
@@ -88,6 +88,22 @@ class EmailService implements EmailContract {
             [
                 'name' => 'planner_email',
                 'content' => $plannerEmail
+            ],
+            [
+                'name' => 'description',
+                'content' => $description
+            ],
+            [
+                'name' => 'venue_name',
+                'content' => $venueName
+            ],
+            [
+                'name' => 'start_date',
+                'content' => $startDate
+            ],
+            [
+                'name' => 'start_time',
+                'content' => $startTime
             ]
         ]);
     }
