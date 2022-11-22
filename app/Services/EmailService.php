@@ -234,6 +234,8 @@ class EmailService implements EmailContract {
         $this->framework['message']['to'][] = $to;
         $this->framework['message']['global_merge_vars'] = $vars;
 
+        print_r($this->framework);
+
         $response = $this->client->messages->sendTemplate($this->framework);
 
         if (is_string($response)) {
