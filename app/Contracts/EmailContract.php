@@ -16,6 +16,16 @@ interface EmailContract {
 
     public function sendEventInvitation(array $to, string $firstName, string $link): bool;
 
+    public function sendCreateEventEmail(
+        array $to,
+        string $plannerFirstName, 
+        string $plannerEmail, 
+        string $description, 
+        string $venueName, 
+        string $startDate, 
+        string $startTime
+    ): bool;
+
     public function sendInvitationAcceptedEmail(
         array $to,
         string $plannerFirstName,
