@@ -24,7 +24,7 @@ class EventInvitationEmailJob implements ShouldQueue {
         $isSent = (new EmailService)->sendEventInvitation([
             'first_name' => $this->invitation->contact->first_name,
             'email' => $this->invitation->contact->email,
-        ], $this->invitation->contact->first_name, env('APP_URL') . "/{$this->invitation->hash}");
+        ], $this->invitation->contact->first_name, "/{$this->invitation->hash}");
 
         if (!$isSent) {
             throw new FailedToSendEmailException();
