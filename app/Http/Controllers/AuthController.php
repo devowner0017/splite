@@ -18,6 +18,7 @@ use App\Models\PasswordReset;
 use App\Models\Planner;
 use App\Models\User;
 use App\Models\UserRole;
+use App\Models\Role;
 use App\Models\VerificationCode;
 use App\Utilities\Message;
 use App\Utilities\UserType;
@@ -235,7 +236,12 @@ class AuthController extends Controller {
         $user = User::query()
             ->where('email', $request->email)
             ->firstOrFail();
-
+        $userRole = UserRole::query()
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+        $role = Role::query()
+            ->where('id', $userRole->role_id)
+            ->firstOrFail();
         if (!password_verify($request->code, $passwordReset->code)) {
             return $this->error(Message::RESET_CODE_MISMATCH, 409);
         }
@@ -259,7 +265,9 @@ class AuthController extends Controller {
             return $this->error(Message::SOMETHING_WENT_WRONG, 500);
         }
 
-        return $this->success();
+        return $this->success([
+            'role' => $role
+        ]);
     }
 
     private static function createConnectAccount(): Account {
