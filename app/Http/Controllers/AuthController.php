@@ -57,8 +57,8 @@ class AuthController extends Controller {
             $userRole->saveOrFail();
             if ($type === UserType::MERCHANT) {
                 $subcategory = new Merchant();
-                $account = self::createConnectAccount();
-                $subcategory->stripe_connect_id = $account->id;
+                // $account = self::createConnectAccount();
+                // $subcategory->stripe_connect_id = $account->id;
             } else {
                 $subcategory = new Planner();
             }
@@ -163,26 +163,26 @@ class AuthController extends Controller {
                 ->where('email', $user->email)
                 ->delete();
 
-            if ($user->merchant) {
-                if (!$user->merchant->stripe_connect_id) {
+            // if ($user->merchant) {
+            //     if (!$user->merchant->stripe_connect_id) {
                     
-                    $account = self::createConnectAccount();
+            //         $account = self::createConnectAccount();
 
-                    $user->merchant->stripe_connect_id = $account->id;
-                    $user->merchant->saveOrFail();
-                }
+            //         $user->merchant->stripe_connect_id = $account->id;
+            //         $user->merchant->saveOrFail();
+            //     }
 
-                $accountId = $user->merchant->stripe_connect_id;
-                $account = Account::retrieve($accountId);
-                $links = AccountLink::create([
-                    'account' => $accountId,
-                    'type' => 'account_onboarding',
-                    'refresh_url' => env('STRIPE_CONNECT_REDIRECT_URL'),
-                    'return_url' => env('STRIPE_CONNECT_REFRESH_URL'),
-                ]);
-                $user->merchant->links = $links;
-                $user->merchant->onboarding_complete = $account->charges_enabled;
-            }
+            //     $accountId = $user->merchant->stripe_connect_id;
+            //     $account = Account::retrieve($accountId);
+            //     $links = AccountLink::create([
+            //         'account' => $accountId,
+            //         'type' => 'account_onboarding',
+            //         'refresh_url' => env('STRIPE_CONNECT_REDIRECT_URL'),
+            //         'return_url' => env('STRIPE_CONNECT_REFRESH_URL'),
+            //     ]);
+            //     $user->merchant->links = $links;
+            //     $user->merchant->onboarding_complete = $account->charges_enabled;
+            // }
 
         } catch (EmailNotVerifiedException $e) {
             return $this->error(Message::NOT_VERIFIED, 403);

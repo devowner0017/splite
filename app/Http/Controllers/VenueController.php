@@ -10,6 +10,7 @@ use App\Models\Venue;
 use App\Utilities\Message;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -91,5 +92,19 @@ class VenueController extends Controller {
         }
 
         return $this->success($venue->refresh()->toArray());
+    }
+    public function destroy( $id):JsonResponse {
+
+        DB::beginTransaction();
+        try {
+            $venue = Venue:: findOrFail($id->id);
+            $venue->delete();
+            DB::commit();
+        } catch(Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+        return response()->json($id);
     }
 }
