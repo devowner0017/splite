@@ -75,7 +75,7 @@ Route::middleware(['jwt.auth', 'jwt.refresh'])->group(function () {
 
 
     // Venues
-    Route::resource('venues', VenueController::class);
+    // Route::resource('venues', VenueController::class);
 
     // Services
     Route::get('venues/{venue_id}/services', [ServiceController::class, 'index']);
@@ -86,3 +86,5 @@ Route::middleware(['jwt.auth', 'jwt.refresh'])->group(function () {
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::post('notifications', [NotificationController::class, 'add']);
 });
+
+Route::resource('venues', VenueController::class);

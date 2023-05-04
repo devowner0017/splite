@@ -93,7 +93,7 @@ class VenueController extends Controller {
 
         return $this->success($venue->refresh()->toArray());
     }
-    public function destroy( $id):JsonResponse {
+    public function destroy( $id) {
 
         DB::beginTransaction();
         try {
