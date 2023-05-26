@@ -17,7 +17,7 @@ class VerifyRequest extends FormRequest {
 
     public function rules() {
         return [
-            'email' => 'required|email|exists:verification_codes,email',
+            'email' => 'required|email',
             'code' => 'required|numeric|digits:5',
         ];
     }

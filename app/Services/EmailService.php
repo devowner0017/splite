@@ -229,6 +229,19 @@ class EmailService implements EmailContract {
         ]);
     }
 
+    public function sendAttendeeJoinedEmail(
+        array $to,
+        string $firstName,
+        string $content
+    ): bool {
+        return $this->send(config('mandrill.attendee_joined'),  $to, [
+            [
+                'name' => $firstName,
+                'content' => $content,
+            ],
+        ]);
+    }
+
     protected function send(string $template, array $to, array $vars): bool {
         $this->framework['template_name'] = $template;
         $this->framework['message']['to'][] = $to;

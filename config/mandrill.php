@@ -12,4 +12,5 @@ return [
     'payment_completed_contact' => env('MANDRILL_PAYMENT_COMPLETED_CONTACT_EMAIL'),
     'payment_completed_merchant' => env('MANDRILL_PAYMENT_COMPLETED_MERCHANT_EMAIL'),
     'payment_completed_planner' => env('MANDRILL_PAYMENT_COMPLETED_PLANNER_EMAIL'),
+    'attendee_joined' => env('MANDRILL_ATTENDEE_JOINED'),
 ];

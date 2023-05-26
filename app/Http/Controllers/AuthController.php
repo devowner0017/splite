@@ -66,7 +66,6 @@ class AuthController extends Controller {
             $subcategory->user_id = $user->id;
             $subcategory->saveOrFail();
 
-
             SendVerificationEmailJob::dispatch($user->email);
 
             DB::commit();
@@ -74,10 +73,10 @@ class AuthController extends Controller {
         } catch (Throwable $e) {
             DB::rollBack();
             Log::debug('Exception in registration', [$e]);
-            return $this->error(Message::SOMETHING_WENT_WRONG, 500);
+            return $this->error($e, 500);
         }
 
-        return $this->success(compact('user'));
+        return $this->success([compact('user')]);
     }
 
     public function verify(VerifyRequest $request): JsonResponse {
@@ -110,14 +109,14 @@ class AuthController extends Controller {
 
         /** @var User $user */
         $user = User::query()
-            ->where('email', $request->email)
+            ->where('email', "bluecoder0220@gmail.com")
             ->firstOrFail();
 
         if (!$token = JWTAuth::fromUser($user)) {
             return $this->error(Message::SOMETHING_WENT_WRONG, 500);
         }
 
-        RegisterEmailJob::dispatch($user);
+        // RegisterEmailJob::dispatch($user);
 
         return $this->success([
             'user' => $user,

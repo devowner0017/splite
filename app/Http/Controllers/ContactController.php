@@ -28,6 +28,7 @@ class ContactController extends Controller {
     public function store(CreateContactRequest $request): JsonResponse {
 
         /** @var Contact $exists */
+        echo $request->email."ok";
         $exists = Contact::query()
             ->where('planner_id', $request->getPlanner()->id)
             ->where('email', $request->email)

@@ -12,6 +12,7 @@ use App\Jobs\EventInvitationEmailJob;
 use App\Jobs\InvitationAcceptedEmailJob;
 use App\Jobs\InvitationDeclinedEmailJob;
 use App\Jobs\CreateEventEmailJob;
+use App\Jobs\AttendeeJoinedEmailJob;
 use App\Models\Booking;
 use App\Models\Contact;
 use App\Models\Event;
@@ -362,6 +363,9 @@ class EventController extends Controller {
             Log::debug("Charges are not enabled for the account", $invitation->toArray());
             $invitation->payment_intent_id_secret = null;
         }
+
+        AttendeeJoinedEmailJob::dispatch($invitation->event,$invitation->contact->first_name, $invitation->contact->email);
+
         $data = array(
             'payment_intent_id_secret' => $invitation->payment_intent_id_secret,
             'status' => 'success'
@@ -464,6 +468,8 @@ class EventController extends Controller {
 
         $invitation->payment_intent_id_secret = $paymentIntent->client_secret;
         
+        AttendeeJoinedEmailJob::dispatch($event, $first_name, $email_address);
+
         $data = array(
             'payment_intent_id_secret' => $invitation->payment_intent_id_secret,
             'status' => 'success'
