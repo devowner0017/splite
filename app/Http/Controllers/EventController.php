@@ -299,7 +299,7 @@ class EventController extends Controller {
         return $this->success($data);    
     }
 
-    public function getSoldStatusByUuid(string $uuid): JsonResponse {
+    public function getSoldStatusByUuid( string $uuid): JsonResponse {
         /** @var Event $invitation */
         $event = Event::query()
                 ->where('uuid', $uuid)
@@ -373,7 +373,7 @@ class EventController extends Controller {
         return $this->success($data);
     }
 
-    public function updatePaymentIntendIdByUuid(string $uuid, string $quantity) : JsonResponse {
+    public function updatePaymentIntendIdByUuid(Request $request, string $uuid, string $quantity) : JsonResponse {
         $event = Event::query()
                 ->where('uuid', $uuid)
                 ->firstOrFail();
@@ -391,7 +391,7 @@ class EventController extends Controller {
                 $total = (int)$quantity *$invitation->event->service->price * 100;
                 $paymentIntent = PaymentIntent::create([
                     'payment_method_types' => [
-                        'card'
+                        $request->input('body')->type == 'card'? 'card':'apple_pay'
                     ],
                     // 'amount' => $invitation->event->service->price * 100,
                     'amount' => $total,
@@ -421,7 +421,7 @@ class EventController extends Controller {
         return $this->success($data);
     }
 
-    public function addAttendeeInfoByUuid(string $quantity, string $uuid, string $first_name, string $email_address) : JsonResponse
+    public function addAttendeeInfoByUuid(Request $request, string $quantity, string $uuid, string $first_name, string $email_address) : JsonResponse
     {
         $event = Event::query()
             ->where('uuid', $uuid)
@@ -451,7 +451,7 @@ class EventController extends Controller {
         $total = (int)$quantity * $event->service->price * 100;
         $paymentIntent = PaymentIntent::create([
             'payment_method_types' => [
-                'card'
+                $request->input('body')->type == 'card'? 'card':'apple_pay'
             ],
             // 'amount' => $invitation->event->service->price * 100,
             'amount' => $total,
