@@ -313,9 +313,9 @@ class EventController extends Controller {
         $max_participants = $invitation->event->service->max_participants;
         $status = 'accepted';
         $invite_list = Invitation::where([
-                                    ['event_id', '=', $event_id],
-                                    ['status', '=', $status]
-                                    ])->get();
+            ['event_id', '=', $event_id],
+            ['status', '=', $status]
+            ])->get();
         $sold_sum = 0;
         foreach($invite_list as $list) {
             $sold_sum += $list['quantity'];
@@ -485,6 +485,9 @@ class EventController extends Controller {
             ->with(['contact', 'event'])
             ->where('hash', $hash)
             ->firstOrFail();
+
+        $planner = User::find($invitation->event->planner_id);
+        $invitation->planner = $planner;
 
         $account = Account::retrieve($invitation->event->service->venue->merchant->stripe_connect_id);
 
