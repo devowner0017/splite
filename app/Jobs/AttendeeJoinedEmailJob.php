@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Http\Models\Event;
+use App\Models\Event;
 use App\Services\EmailService;
 use App\Exceptions\FailedToSendEmailException;
 

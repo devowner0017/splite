@@ -451,7 +451,7 @@ class EventController extends Controller {
         $total = (int)$quantity * $event->service->price * 100;
         $paymentIntent = PaymentIntent::create([
             'payment_method_types' => [
-                $request->input('body')->type == 'card'? 'card':'apple_pay'
+                $request->json()->type == 'card'? 'card':'apple_pay'
             ],
             // 'amount' => $invitation->event->service->price * 100,
             'amount' => $total,
@@ -535,6 +535,9 @@ class EventController extends Controller {
             ->with(['event'])
             ->where('event_id', $event_id)
             ->firstOrFail();
+
+        $planner = User::find($invitation->event->planner_id);
+        $invitation->planner = $planner;
         
         $account = Account::retrieve($invitation->event->service->venue->merchant->stripe_connect_id);
 
