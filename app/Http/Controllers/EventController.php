@@ -373,7 +373,7 @@ class EventController extends Controller {
         return $this->success($data);
     }
 
-    public function updatePaymentIntendIdByUuid(Request $request, string $uuid, string $quantity) : JsonResponse {
+    public function updatePaymentIntendIdByUuid(string $uuid, string $quantity) : JsonResponse {
         $event = Event::query()
                 ->where('uuid', $uuid)
                 ->firstOrFail();
@@ -390,9 +390,6 @@ class EventController extends Controller {
             if (!$invitation->payment_intent_id) {
                 $total = (int)$quantity *$invitation->event->service->price * 100;
                 $paymentIntent = PaymentIntent::create([
-                    'payment_method_types' => [
-                        $request->input('body')->type == 'card'? 'card':'apple_pay'
-                    ],
                     // 'amount' => $invitation->event->service->price * 100,
                     'amount' => $total,
                     'currency' => 'usd',
@@ -421,7 +418,7 @@ class EventController extends Controller {
         return $this->success($data);
     }
 
-    public function addAttendeeInfoByUuid(Request $request, string $quantity, string $uuid, string $first_name, string $email_address) : JsonResponse
+    public function addAttendeeInfoByUuid(string $quantity, string $uuid, string $first_name, string $email_address) : JsonResponse
     {
         $event = Event::query()
             ->where('uuid', $uuid)
@@ -450,9 +447,6 @@ class EventController extends Controller {
 
         $total = (int)$quantity * $event->service->price * 100;
         $paymentIntent = PaymentIntent::create([
-            'payment_method_types' => [
-                $request->json()->type == 'card'? 'card':'apple_pay'
-            ],
             // 'amount' => $invitation->event->service->price * 100,
             'amount' => $total,
             'currency' => 'usd',
