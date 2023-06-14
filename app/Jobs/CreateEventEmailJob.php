@@ -30,12 +30,18 @@ class CreateEventEmailJob implements ShouldQueue
      * @return void
      */
     public function handle() {
+        $times = explode(":", $this->event->start_time);
         $isSent = (new EmailService)->sendCreateEventEmail([
             'first_name' => $this->event->service->venue->merchant->user->first_name,
             'email' => $this->event->service->venue->merchant->user->email,
-        ], $this->event->planner->user->first_name, $this->event->planner->user->email, $this->event->service->description, $this->event->service->venue->name, $this->event->date, $this->event->start_time);
+        ], $this->event->planner->user->first_name, $this->event->planner->user->email, $this->event->service->description, $this->event->service->venue->name, $this->event->date, $time[0] . ":" . $times[1]);
 
-        if (!$isSent) {
+        $isSent2 = (new EmailService)->sendCreateEventEmail([
+            'first_name' => $this->event->planner->user->first_name,
+            'email' => $this->event->planner->user->email
+        ], $this->event->planner->user->first_name, $this->event->planner->user->email, $this->event->service->description, $this->event->service->venue->name, $this->event->date, $time[0] . ":" . $times[1]);
+
+        if (!$isSent || !$isSent2) {
             throw new FailedToSendEmailException();
         }
     }
